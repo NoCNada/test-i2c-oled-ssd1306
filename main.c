@@ -75,9 +75,10 @@ short indexHeader;
 
 int main(void)
 {
-	cli();
+	cli(); //habilita todas las interrupciones
+	TWI_init_master();
 	InitDisplay();
-
+	//sei();
 	estado_com_display = 0;
 	timeoutBlink = 25;
 	maxtimeBlink = timeoutBlink;
@@ -86,65 +87,12 @@ int main(void)
 	flags1.bit.confirmBoton = 0;
 
 	
-	sei(); //habilita todas las interrupciones
+	
 	
 	
 	while (1)
 	{
-		//if(!(PIND & (1<<PIND2)) & !flags1.bit.botonpresionado){
-		//flags1.bit.confirmBoton = 1;
-		//if(!timeBoton){
-		//flags1.bit.botonpresionado = 1;
-		//flags1.bit.confirmBoton = 0;
-		//PORTB |= (1<<PORTB5);
-		//}
-		//}
 		
-		//if(flags1.bit.botonpresionado){
-		//if(!(PIND & (1<<PIND2))){
-		//
-		//
-		//Send_Command(0x00,0xB3);
-		//Send_Command(0x00,0x0F);
-		//Send_Command(0x00,0x10);
-		////Send_Command(0x00,0xE0);
-		//
-		//Send_Command(0x40,0xFF);
-		//Send_Command(0x40,0x88);
-		//Send_Command(0x40,0x88);
-		//Send_Command(0x40,0x80);
-		//Send_Command(0x40,0x80);
-		//Send_Command(0x40,0x00);
-		//Send_Command(0x40,0x00);
-		//Send_Command(0x40,0x00);
-		//
-		//Send_Command(0x40,0x7f);
-		//Send_Command(0x40,0x81);
-		//Send_Command(0x40,0x81);
-		//Send_Command(0x40,0x81);
-		//Send_Command(0x40,0x81);
-		//Send_Command(0x40,0x00);
-		//Send_Command(0x40,0x00);
-		//Send_Command(0x40,0x00);
-		//
-		//Send_Command(0x40,0x7f);
-		//Send_Command(0x40,0x88);
-		//Send_Command(0x40,0x88);
-		//Send_Command(0x40,0x88);
-		//Send_Command(0x40,0x7F);
-		//Send_Command(0x40,0x00);
-		//Send_Command(0x40,0x00);
-		//Send_Command(0x40,0x00);
-		//
-		//Send_Command(0x40,0xFf);
-		//Send_Command(0x40,0x01);
-		//Send_Command(0x40,0x01);
-		//Send_Command(0x40,0x01);
-		//Send_Command(0x40,0x01);
-		//Send_Command(0x40,0x00);
-		//Send_Command(0x40,0x00);
-		//Send_Command(0x40,0x00);
-		//}
 		
 	}
 }
@@ -183,7 +131,7 @@ void Start_TWI(){
 }
 void Send_Address(){
 	TWDR = (ADDRESS << 1);
-	TWCR =(1<<TWINT)|(1<<TWEN);
+	TWCR =(1<<TWINT)|(1<<TWEN)|(1<<TWIE); // HABILITO INTERRUPCION con TWIE
 	while (!(TWCR & (1<<TWINT)));
 	status_TWI = TWSR & 0xF8;
 	if(status_TWI==0x18 || status_TWI==0x20){
@@ -222,11 +170,12 @@ void TWI_init_master(){
 	//Estos 3 datos son para el cálculo de la frec de transmisión, da 200KHz en esta config
 	//TWCR |= (1<<TWEA);//habilita bit de acknowledge
 	TWCR |= (1<<TWEN); //habilita el twi
+	//TWCR |= (1<<TWIE); //HABILITO INTERRUPCION
 	
 }
 
 void InitDisplay(){
-	TWI_init_master();
+	
 	Send_Command22(); //Le decimos a la pantalla que viene una lista de comandos de configuracion
 
 	Send_Data(DISPLAY_OFF);//Apago display
@@ -276,9 +225,9 @@ void InitDisplay(){
 	Send_Data(SETPAGEADRESS);//Paginas de 0 a 7
 	Send_Data(0x00);
 	Send_Data(0x07);
-
+	Send_Data(0x20);
+	Send_Data(0x00);
 	Stop_TWI(); //CIERRO COMUNICACION
-	
 	
 	ClearDisplay();
 	
