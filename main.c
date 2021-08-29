@@ -10,7 +10,7 @@
 #define CHARGEPUMP 0x8D
 #define MEMORYMODE 0x20 //SET MEMORY ADRESS MODE, EN ESTE CASO NO ES NECESARIO YA VIENE POR DEFECTO EN HORIZONTAL - primero 0x20 y despues 0x00
 #define SEGREMAP 0xA0
-#define COMSCANDEC0 0xC0 //SCAN FROM COM[N-1] TO COM0 //N ES EL NUMERO DE MULTIPLEX RATIO, en este caso 64-1 = 63 = 0x3F 
+#define COMSCANDEC0 0xC0 //SCAN FROM COM[N-1] TO COM0 //N ES EL NUMERO DE MULTIPLEX RATIO, en este caso 64-1 = 63 = 0x3F
 #define COMSCANDEC8 0xC8 //SCAN FROM COM0 TO COM[N-1]
 #define SETCOMPINS 0xDA //Set COM Pins Hardware Configuration
 #define SETCONTRAST 0x81
@@ -38,8 +38,9 @@ void Send_Address();
 void Send_Data(uint8_t);
 void Stop_TWI();
 void Send_Command(uint8_t,uint8_t);
-void Send_Command22(uint8_t,uint8_t);
-void Write_Display(uint8_t,uint8_t);
+void Send_Command22();
+void Write_Display(uint8_t);
+void TWI_init_master();
 void ClearDisplay();
 
 typedef union{
@@ -91,58 +92,58 @@ int main(void)
 	while (1)
 	{
 		//if(!(PIND & (1<<PIND2)) & !flags1.bit.botonpresionado){
-			//flags1.bit.confirmBoton = 1;
-			//if(!timeBoton){
-				//flags1.bit.botonpresionado = 1;
-				//flags1.bit.confirmBoton = 0;
-				//PORTB |= (1<<PORTB5);
-			//}
+		//flags1.bit.confirmBoton = 1;
+		//if(!timeBoton){
+		//flags1.bit.botonpresionado = 1;
+		//flags1.bit.confirmBoton = 0;
+		//PORTB |= (1<<PORTB5);
+		//}
 		//}
 		
 		//if(flags1.bit.botonpresionado){
 		//if(!(PIND & (1<<PIND2))){
-			//
-			//
-			//Send_Command(0x00,0xB3);
-			//Send_Command(0x00,0x0F);
-			//Send_Command(0x00,0x10);
-			////Send_Command(0x00,0xE0);
-			//
-			//Send_Command(0x40,0xFF);
-			//Send_Command(0x40,0x88);
-			//Send_Command(0x40,0x88);
-			//Send_Command(0x40,0x80);
-			//Send_Command(0x40,0x80);
-			//Send_Command(0x40,0x00);
-			//Send_Command(0x40,0x00);
-			//Send_Command(0x40,0x00);
-			//
-			//Send_Command(0x40,0x7f);
-			//Send_Command(0x40,0x81);
-			//Send_Command(0x40,0x81);
-			//Send_Command(0x40,0x81);
-			//Send_Command(0x40,0x81);
-			//Send_Command(0x40,0x00);
-			//Send_Command(0x40,0x00);
-			//Send_Command(0x40,0x00);
-			//
-			//Send_Command(0x40,0x7f);
-			//Send_Command(0x40,0x88);
-			//Send_Command(0x40,0x88);
-			//Send_Command(0x40,0x88);
-			//Send_Command(0x40,0x7F);
-			//Send_Command(0x40,0x00);
-			//Send_Command(0x40,0x00);
-			//Send_Command(0x40,0x00);
-//
-			//Send_Command(0x40,0xFf);
-			//Send_Command(0x40,0x01);
-			//Send_Command(0x40,0x01);
-			//Send_Command(0x40,0x01);
-			//Send_Command(0x40,0x01);
-			//Send_Command(0x40,0x00);
-			//Send_Command(0x40,0x00);
-			//Send_Command(0x40,0x00);			
+		//
+		//
+		//Send_Command(0x00,0xB3);
+		//Send_Command(0x00,0x0F);
+		//Send_Command(0x00,0x10);
+		////Send_Command(0x00,0xE0);
+		//
+		//Send_Command(0x40,0xFF);
+		//Send_Command(0x40,0x88);
+		//Send_Command(0x40,0x88);
+		//Send_Command(0x40,0x80);
+		//Send_Command(0x40,0x80);
+		//Send_Command(0x40,0x00);
+		//Send_Command(0x40,0x00);
+		//Send_Command(0x40,0x00);
+		//
+		//Send_Command(0x40,0x7f);
+		//Send_Command(0x40,0x81);
+		//Send_Command(0x40,0x81);
+		//Send_Command(0x40,0x81);
+		//Send_Command(0x40,0x81);
+		//Send_Command(0x40,0x00);
+		//Send_Command(0x40,0x00);
+		//Send_Command(0x40,0x00);
+		//
+		//Send_Command(0x40,0x7f);
+		//Send_Command(0x40,0x88);
+		//Send_Command(0x40,0x88);
+		//Send_Command(0x40,0x88);
+		//Send_Command(0x40,0x7F);
+		//Send_Command(0x40,0x00);
+		//Send_Command(0x40,0x00);
+		//Send_Command(0x40,0x00);
+		//
+		//Send_Command(0x40,0xFf);
+		//Send_Command(0x40,0x01);
+		//Send_Command(0x40,0x01);
+		//Send_Command(0x40,0x01);
+		//Send_Command(0x40,0x01);
+		//Send_Command(0x40,0x00);
+		//Send_Command(0x40,0x00);
+		//Send_Command(0x40,0x00);
 		//}
 		
 	}
@@ -157,20 +158,19 @@ void Send_Command(uint8_t c,uint8_t cmd){
 	Stop_TWI();
 }
 
-void Write_Display(uint8_t c,uint8_t cmd){
+void Write_Display(uint8_t cmd){
 	Start_TWI();
 	Send_Address();
-	Send_Data(c);
+	Send_Data(0x40);
 	Send_Data(cmd);
 	Stop_TWI();
 }
 
-void Send_Command22(uint8_t c,uint8_t cmd){
-	//Start_TWI();
-	//Send_Address();
-	//Send_Data(c);
-	Send_Data(cmd);
-	//Stop_TWI();
+void Send_Command22(){
+	Start_TWI();
+	Send_Address();
+	Send_Data(0x00);
+
 }
 
 void Start_TWI(){
@@ -209,26 +209,33 @@ void Stop_TWI(){
 
 void ClearDisplay(){
 	for(uint16_t i=0;i<1024; i++){
-		Write_Display(0x40,0x00);
+		Write_Display(0x00);
+		//Write_Display(0x00);
 	}
 
 }
 
-void InitDisplay(){
+void TWI_init_master(){
 	TWBR = 0x08; //bit rate register
 	TWSR &=~ (1<<TWPS1) ;
 	TWSR |= (1<<TWPS0) ;//bits del preescalador
 	//Estos 3 datos son para el cálculo de la frec de transmisión, da 200KHz en esta config
 	//TWCR |= (1<<TWEA);//habilita bit de acknowledge
 	TWCR |= (1<<TWEN); //habilita el twi
-	Start_TWI();
-	Send_Address();
-	Send_Data(0x00); //Le decimos a la pantalla que viene una lista de comandos de configuracion
+	
+}
+
+void InitDisplay(){
+	TWI_init_master();
+	Send_Command22(); //Le decimos a la pantalla que viene una lista de comandos de configuracion
 
 	Send_Data(DISPLAY_OFF);//Apago display
 	
 	Send_Data(SETDISPLAYCLOCKDIV); //Establecer la velocidad del Oscilador
 	Send_Data(0x80); //Establecer la velocidad del Oscilador
+	
+	Send_Data(0x8D);
+	Send_Data(0x14);
 	
 	Send_Data(SETMULTIPLEX); //establecemos multiplex 0xA8
 	// Establecer el maximo de filas a 0x3F = 63
@@ -274,57 +281,57 @@ void InitDisplay(){
 	
 	
 	ClearDisplay();
-	Start_TWI();
-	Send_Address();
-	Send_Data(0x00);
+	
+	Send_Command22();
 	Send_Data(DISPLAYON);
 	_delay_ms(100);
-	Write_Display(0x00,0xA4);
+	Send_Data(0xA4);
 	_delay_ms(1000);
-	Write_Display(0x00,0xA5);
+	Send_Data(0xA5);
 	_delay_ms(1000);
-	Write_Display(0x00,0xA4);
+	Send_Data(0xA4);
 	_delay_ms(1000);
 	
-		Send_Command(0x00,0xB3);
-		Send_Command(0x00,0x0F);
-		Send_Command(0x00,0x10);
-		//Send_Command(0x00,0xE0);
-				
-		Send_Command(0x40,0xFF);
-		Send_Command(0x40,0x88);
-		Send_Command(0x40,0x88);
-		Send_Command(0x40,0x80);
-		Send_Command(0x40,0x80);
-		Send_Command(0x40,0x00);
-		Send_Command(0x40,0x00);
-		Send_Command(0x40,0x00);
-				
-		Send_Command(0x40,0x7f);
-		Send_Command(0x40,0x81);
-		Send_Command(0x40,0x81);
-		Send_Command(0x40,0x81);
-		Send_Command(0x40,0x81);
-		Send_Command(0x40,0x00);
-		Send_Command(0x40,0x00);
-		Send_Command(0x40,0x00);
-				
-		Send_Command(0x40,0x7f);
-		Send_Command(0x40,0x88);
-		Send_Command(0x40,0x88);
-		Send_Command(0x40,0x88);
-		Send_Command(0x40,0x7F);
-		Send_Command(0x40,0x00);
-		Send_Command(0x40,0x00);
-		Send_Command(0x40,0x00);
+	Send_Data(0xB3);
+	Send_Data(0x0F);
+	Send_Data(0x10);
+	//Send_Command(0x00,0xE0);
+	Stop_TWI();
+	
+	Write_Display(0xFF);
+	Write_Display(0x88);
+	Write_Display(0x88);
+	Write_Display(0x80);
+	Write_Display(0x80);
+	Write_Display(0x00);
+	Write_Display(0x00);
+	Write_Display(0x00);
+	//2
+	Write_Display(0x7f);
+	Write_Display(0x81);
+	Write_Display(0x81);
+	Write_Display(0x81);
+	Write_Display(0x81);
+	Write_Display(0x00);
+	Write_Display(0x00);
+	Write_Display(0x00);
+	
+	Write_Display(0x7f);
+	Write_Display(0x88);
+	Write_Display(0x88);
+	Write_Display(0x88);
+	Write_Display(0x7F);
+	Write_Display(0x00);
+	Write_Display(0x00);
+	Write_Display(0x00);
 
-		Send_Command(0x40,0xFf);
-		Send_Command(0x40,0x01);
-		Send_Command(0x40,0x01);
-		Send_Command(0x40,0x01);
-		Send_Command(0x40,0x01);
-		Send_Command(0x40,0x00);
-		Send_Command(0x40,0x00);
-		Send_Command(0x40,0x00);
-				
+	Write_Display(0xFf);
+	Write_Display(0x01);
+	Write_Display(0x01);
+	Write_Display(0x01);
+	Write_Display(0x01);
+	Write_Display(0x00);
+	Write_Display(0x00);
+	Write_Display(0x00);
+	
 }
